@@ -1,500 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Apcolite Brush Manager + Code Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>Futuristic App Store UI (Frontend Only)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fonts + Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- React + ReactDOM + Babel (for JSX in browser) -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <style>
-    :root{
-      --bg:#050814;
-      --bg-soft:#0b1020;
-      --panel:#0f172a;
-      --glass:rgba(15,23,42,0.75);
-      --border:rgba(148,163,184,0.35);
-      --accent:#22d3ee;
-      --accent-soft:rgba(34,211,238,0.2);
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --danger:#fb7185;
-      --radius:18px;
-      --shadow:0 18px 40px rgba(15,23,42,0.9);
-      --dur:0.22s;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      font-family:"Poppins",sans-serif;
-      background:radial-gradient(circle at top,#111827 0,#020617 50%,#000 100%);
-      color:var(--text);
-      height:100vh;
-      overflow:hidden;
-      display:flex;
-      align-items:stretch;
-      justify-content:center;
-    }
-    /* SPLASH */
-    #splash{
-      position:fixed;inset:0;
-      background:radial-gradient(circle at top,#0f172a 0,#020617 60%);
-      display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      z-index:50;
-      animation:splashFade 1.7s ease-in-out forwards;
-    }
-    @keyframes splashFade{
-      0%{opacity:1;transform:scale(1);}
-      60%{opacity:1;transform:scale(1);}
-      100%{opacity:0;transform:scale(1.04);visibility:hidden;}
-    }
-    .splash-logo{
-      width:90px;height:90px;border-radius:26px;
-      background:conic-gradient(from 140deg,#22d3ee,#38bdf8,#a855f7,#22d3ee);
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 40px rgba(34,211,238,0.8);
-      position:relative;overflow:hidden;
-    }
-    .splash-logo::after{
-      content:"";position:absolute;inset:5px;
-      border-radius:20px;background:#020617;
-    }
-    .splash-logo span{
-      position:relative;z-index:1;font-size:34px;font-weight:700;color:#22d3ee;
-    }
-    .splash-title{
-      margin-top:18px;font-size:22px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
-    }
-    .splash-sub{
-      margin-top:4px;font-size:12px;color:var(--muted);
-    }
+    <style>
+      /* Simple neon, 3D & animation helpers */
 
-    /* APP LAYOUT */
-    .app{
-      position:relative;
-      width:100%;max-width:1400px;height:100vh;
-      margin:6px;
-      border-radius:26px;
-      overflow:hidden;
-      display:grid;
-      grid-template-columns:260px minmax(0,1.4fr) minmax(0,1fr);
-      background:linear-gradient(135deg,#020617,#020617);
-      box-shadow:
-        0 26px 80px rgba(0,0,0,0.95),
-        inset 0 0 0 1px rgba(148,163,184,0.1);
-    }
-    .orb{
-      position:absolute;border-radius:999px;filter:blur(40px);
-      opacity:0.45;pointer-events:none;mix-blend-mode:screen;
-    }
-    .orb.one{width:230px;height:230px;background:#22d3ee;top:-60px;left:-40px;animation:orb 10s infinite alternate;}
-    .orb.two{width:260px;height:260px;background:#a855f7;bottom:-80px;right:60px;animation:orb 12s infinite alternate;}
-    @keyframes orb{from{transform:translate3d(0,0,0);}to{transform:translate3d(10px,-18px,0);opacity:.7;}}
+      body {
+        background: radial-gradient(circle at top, #0f172a, #020617 60%);
+        color: #e5e7eb;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          sans-serif;
+      }
 
-    /* SIDEBAR */
-    .sidebar{
-      position:relative;z-index:2;
-      background:linear-gradient(180deg,#020617 0,#020617 55%,#020617 100%);
-      border-right:1px solid rgba(15,23,42,0.9);
-      display:flex;flex-direction:column;
-      padding:12px 10px;
-      transition:width var(--dur) ease-out;
-      overflow:hidden;
-    }
-    .sidebar.collapsed{width:72px;}
-    .sidebar-head{
-      display:flex;align-items:center;gap:10px;margin-bottom:12px;
-    }
-    .logo-circle{
-      width:38px;height:38px;border-radius:14px;
-      background:radial-gradient(circle at 20% 0,#22d3ee,#4f46e5);
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 0 20px rgba(34,211,238,0.7);
-    }
-    .logo-circle i{font-size:20px;color:#e5e7eb;}
-    .brand-text{display:flex;flex-direction:column;}
-    .brand-text strong{font-size:14px;letter-spacing:0.08em;text-transform:uppercase;}
-    .brand-text span{font-size:10px;color:var(--muted);}
-    .sidebar-toggle{
-      margin-left:auto;border:none;background:transparent;color:var(--muted);
-      cursor:pointer;font-size:20px;
-      transition:transform var(--dur);
-    }
-    .sidebar.collapsed .brand-text{display:none;}
-    .sidebar.collapsed .sidebar-toggle{transform:rotate(180deg);}
+      .bg-neon-grid {
+        background-image: radial-gradient(circle at 1px 1px, #1e293b 1px, #020617 0);
+        background-size: 24px 24px;
+      }
 
-    .nav-title{
-      font-size:10px;color:var(--muted);
-      letter-spacing:0.16em;text-transform:uppercase;
-      margin:4px 4px 6px;
-    }
-    .nav-list{list-style:none;}
-    .nav-item{
-      border-radius:999px;padding:8px 10px;
-      display:flex;align-items:center;gap:8px;
-      cursor:pointer;font-size:12px;color:var(--muted);
-      margin-bottom:6px;
-      background:var(--bg-soft);
-      border:1px solid rgba(15,23,42,1);
-      box-shadow:0 12px 28px rgba(15,23,42,0.9);
-      transition:background var(--dur),transform var(--dur),box-shadow var(--dur),color var(--dur),border-color var(--dur);
-    }
-    .nav-item i{font-size:18px;}
-    .nav-item span.label{flex:1;}
-    .nav-item .tag{
-      font-size:9px;padding:2px 7px;border-radius:999px;
-      border:1px solid rgba(148,163,184,0.4);background:rgba(15,23,42,0.96);
-    }
-    .nav-item:hover{
-      transform:translateY(-2px);
-      border-color:var(--accent-soft);
-      background:linear-gradient(135deg,rgba(34,211,238,0.22),#020617);
-      color:var(--text);
-      box-shadow:0 18px 40px rgba(15,23,42,1);
-    }
-    .nav-item.active{
-      border-color:var(--accent);
-      background:linear-gradient(135deg,rgba(56,189,248,0.3),rgba(15,23,42,0.98));
-      color:#fff;
-      box-shadow:0 18px 45px rgba(8,47,73,1);
-    }
-    .nav-item.disabled{
-      opacity:0.45;cursor:not-allowed;
-    }
-    .sidebar.collapsed .nav-item span.label,
-    .sidebar.collapsed .nav-item .tag{display:none;}
+      .float-slow {
+        animation: float-slow 6s ease-in-out infinite;
+      }
 
-    .sidebar-footer{
-      margin-top:auto;padding-top:10px;border-top:1px solid rgba(15,23,42,0.8);
-    }
-    .user-pill{
-      display:flex;align-items:center;gap:8px;
-      padding:8px;border-radius:999px;
-      background:var(--bg-soft);
-      border:1px solid var(--border);
-      box-shadow:0 10px 26px rgba(15,23,42,0.9);
-    }
-    .avatar{
-      width:30px;height:30px;border-radius:999px;
-      background:radial-gradient(circle at 20% 0,#22d3ee,#4f46e5);
-      display:flex;align-items:center;justify-content:center;
-      font-size:14px;font-weight:600;
-      overflow:hidden;
-    }
-    .avatar img{width:100%;height:100%;object-fit:cover;}
-    .user-meta{font-size:10px;}
-    .user-meta strong{display:block;}
-    .role-chip{
-      margin-top:2px;padding:2px 6px;border-radius:999px;
-      border:1px solid rgba(148,163,184,0.5);
-      font-size:9px;display:inline-flex;align-items:center;gap:4px;
-    }
-    .role-chip i{font-size:11px;color:var(--accent);}
-    .role-select{
-      margin-top:6px;width:100%;
-      border-radius:999px;border:1px solid var(--border);
-      background:var(--bg-soft);color:var(--text);
-      padding:4px 8px;font-size:10px;outline:none;
-    }
-    .hint{margin-top:4px;font-size:9px;color:var(--muted);}
+      .float-slow-delayed {
+        animation: float-slow 8s ease-in-out infinite;
+      }
 
-    /* MAIN LEFT AREA */
-    .main-left{
-      position:relative;
-      background:radial-gradient(circle at top,rgba(30,64,175,0.3),transparent 55%),
-                  radial-gradient(circle at bottom right,rgba(34,211,238,0.16),transparent 52%),
-                  #020617;
-      display:flex;flex-direction:column;
-    }
-    .topbar{
-      padding:10px 18px;
-      border-bottom:1px solid rgba(15,23,42,0.9);
-      display:flex;align-items:center;justify-content:space-between;
-      backdrop-filter:blur(16px);
-      background:linear-gradient(90deg,#020617,rgba(15,23,42,0.9));
-    }
-    .page-title{
-      font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;
-    }
-    .page-title i{color:var(--accent);}
-    .page-pill{
-      font-size:10px;padding:2px 8px;border-radius:999px;
-      border:1px solid rgba(56,189,248,0.6);
-      background:rgba(8,47,73,0.9);color:#bae6fd;
-    }
-    .top-metrics{display:flex;gap:8px;font-size:11px;}
-    .chip{
-      border-radius:999px;padding:4px 9px;display:flex;align-items:center;gap:6px;
-      background:rgba(15,23,42,0.96);border:1px solid var(--border);
-      box-shadow:0 10px 24px rgba(15,23,42,1);
-    }
-    .chip i{color:var(--accent);}
-    .content{
-      flex:1;padding:14px 18px 18px;overflow-y:auto;
-    }
-    .view{display:none;animation:fadeInUp .25s ease-out;}
-    .view.active{display:block;}
-    @keyframes fadeInUp{
-      from{opacity:0;transform:translateY(8px);}
-      to{opacity:1;transform:translateY(0);}
-    }
+      .spin-slow {
+        animation: spin-slow 18s linear infinite;
+      }
 
-    .grid{display:grid;gap:12px;}
-    .grid-2{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);}
-    @media(max-width:900px){.grid-2{grid-template-columns:1fr;}}
+      @keyframes float-slow {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
 
-    .card{
-      background:var(--glass);
-      border-radius:var(--radius);
-      border:1px solid var(--border);
-      padding:12px 14px 14px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      position:relative;overflow:hidden;
-    }
-    .card::before{
-      content:"";position:absolute;inset:0;
-      background:radial-gradient(circle at top left,rgba(56,189,248,0.22),transparent 60%);
-      opacity:0;transition:opacity var(--dur);
-      pointer-events:none;
-    }
-    .card:hover::before{opacity:1;}
-    .card-header{
-      display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;
-    }
-    .card-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
-    .card-title i{color:var(--accent);}
-    .card-sub{font-size:11px;color:var(--muted);}
-    .pill{
-      font-size:10px;padding:2px 7px;border-radius:999px;
-      border:1px solid var(--border);background:rgba(15,23,42,0.95);color:var(--muted);
-    }
-    .pill.green{border-color:#4ade80;color:#bbf7d0;background:rgba(21,128,61,0.9);}
-    .pill.red{border-color:#fb7185;color:#fee2e2;background:rgba(153,27,27,0.9);}
-    .pill.blue{border-color:#60a5fa;color:#dbeafe;background:rgba(30,64,175,0.9);}
+      @keyframes spin-slow {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-    .btn{
-      border:none;border-radius:999px;background:linear-gradient(135deg,#22d3ee,#22c55e);
-      color:#020617;font-size:11px;font-weight:500;
-      padding:7px 13px;display:inline-flex;align-items:center;gap:6px;
-      cursor:pointer;box-shadow:0 14px 30px rgba(34,211,238,0.8);
-      transition:transform .18s,box-shadow .18s,filter .18s;
-    }
-    .btn i{font-size:15px;}
-    .btn:hover{transform:translateY(-1px) scale(1.02);box-shadow:0 18px 38px rgba(34,211,238,1);filter:brightness(1.05);}
-    .btn:active{transform:translateY(1px) scale(.97);box-shadow:0 10px 22px rgba(15,23,42,1);filter:brightness(.95);}
-    .btn-ghost{
-      background:rgba(15,23,42,0.98);color:var(--text);
-      border:1px solid var(--border);box-shadow:0 10px 24px rgba(15,23,42,1);
-    }
+      .glass-panel {
+        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 50%),
+          radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.25), transparent 55%),
+          rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(18px);
+      }
 
-    /* FORMS */
-    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px 12px;margin-top:6px;}
-    .field{font-size:11px;display:flex;flex-direction:column;gap:3px;}
-    .label{color:var(--muted);display:flex;align-items:center;gap:5px;}
-    .label i{color:var(--accent);}
-    input,textarea,select{
-      border-radius:999px;border:1px solid var(--border);
-      background:#020617;color:var(--text);
-      padding:7px 10px;font-size:11px;outline:none;
-      box-shadow:0 10px 24px rgba(15,23,42,1),inset 0 1px 0 rgba(148,163,184,0.4);
-      transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);
-    }
-    textarea{border-radius:14px;min-height:70px;resize:vertical;}
-    input:focus,textarea:focus,select:focus{
-      border-color:var(--accent);background:#020617;
-      box-shadow:0 14px 32px rgba(15,23,42,1),0 0 18px rgba(56,189,248,0.6);
-    }
-    .help{font-size:9px;color:var(--muted);margin-top:1px;}
+      .transition-soft {
+        transition: all 0.25s ease-out;
+      }
 
-    .image-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
-    .thumb{
-      width:60px;height:60px;border-radius:14px;overflow:hidden;
-      border:1px solid var(--border);background:#020617;
-      box-shadow:0 10px 22px rgba(15,23,42,1);
-      position:relative;
-    }
-    .thumb img{width:100%;height:100%;object-fit:cover;}
+      .toggle-3d {
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8);
+      }
 
-    /* PRODUCTS GRID */
-    .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:8px;}
-    .product-card{
-      border-radius:14px;padding:9px 10px;
-      background:#020617;border:1px solid rgba(31,41,55,0.9);
-      box-shadow:0 14px 30px rgba(15,23,42,1);
-      cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;
-      position:relative;overflow:hidden;
-    }
-    .product-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 18px 40px rgba(15,23,42,1);}
-    .badge{
-      position:absolute;top:8px;right:8px;
-      font-size:9px;padding:2px 6px;border-radius:999px;
-      background:rgba(34,197,94,0.18);color:#bbf7d0;border:1px solid rgba(34,197,94,0.7);
-    }
-    .p-thumb{
-      width:100%;height:110px;border-radius:12px;overflow:hidden;
-      background:radial-gradient(circle at top,#0f172a,#020617);
-      border:1px solid rgba(55,65,81,0.9);
-    }
-    .p-thumb img{width:100%;height:100%;object-fit:cover;}
-    .p-title{margin-top:6px;font-size:12px;font-weight:500;}
-    .p-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:2px;font-size:10px;}
-    .price{font-size:13px;font-weight:600;color:#a5b4fc;}
-    .strike{text-decoration:line-through;color:#6b7280;font-size:10px;}
-    .discount-pill{
-      padding:2px 7px;border-radius:999px;background:rgba(22,163,74,0.3);
-      border:1px solid rgba(34,197,94,0.9);font-size:9px;color:#bbf7d0;
-    }
-    .empty{
-      border-radius:14px;border:1px dashed var(--border);
-      padding:10px 12px;font-size:11px;color:var(--muted);
-      background:rgba(15,23,42,0.96);
-    }
-    .empty strong{color:var(--text);display:block;margin-bottom:2px;}
+      .card-3d {
+        box-shadow:
+          0 28px 65px rgba(0, 0, 0, 0.9),
+          0 0 40px rgba(56, 189, 248, 0.35);
+      }
 
-    /* TABLE */
-    table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px;}
-    th,td{padding:6px 6px;border-bottom:1px solid rgba(31,41,55,0.9);text-align:left;}
-    th{color:var(--muted);font-weight:500;}
-    tr:hover td{background:#020617;}
+      .neon-border {
+        border-image: linear-gradient(135deg, #22d3ee, #a855f7, #f97316) 1;
+      }
 
-    /* DETAIL PANEL */
-    .detail-panel{
-      margin-top:8px;border-radius:16px;border:1px solid var(--border);
-      background:#020617;padding:10px 12px;box-shadow:var(--shadow);
-    }
-    .detail-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:10px;}
-    @media(max-width:800px){.detail-grid{grid-template-columns:1fr;}}
-    .detail-images{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
-    .detail-images img{height:110px;border-radius:12px;border:1px solid var(--border);box-shadow:0 10px 24px rgba(15,23,42,1);}
-    .row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
-    .row span:first-child{color:var(--muted);}
+      .neon-glow {
+        box-shadow:
+          0 0 20px rgba(56, 189, 248, 0.5),
+          0 0 40px rgba(168, 85, 247, 0.4);
+      }
 
-    /* RIGHT CODE PANEL */
-    .code-panel{
-      background:#020617;border-left:1px solid rgba(15,23,42,0.9);
-      display:flex;flex-direction:column;
-    }
-    .code-header{
-      padding:8px 10px;border-bottom:1px solid rgba(15,23,42,0.9);
-      display:flex;justify-content:flex-end;gap:6px;
-      background:#020617;
-    }
-    .code-header button{
-      border-radius:999px;border:1px solid rgba(31,41,55,1);
-      background:#020617;color:var(--text);
-      padding:5px 9px;font-size:11px;cursor:pointer;
-      display:inline-flex;align-items:center;gap:4px;
-      box-shadow:0 8px 20px rgba(15,23,42,1);
-      transition:background .18s,transform .18s,box-shadow .18s,color .18s;
-    }
-    .code-header button i{font-size:14px;}
-    .code-header button:hover{
-      background:linear-gradient(135deg,#22d3ee,#38bdf8);
-      color:#020617;transform:translateY(-1px);
-      box-shadow:0 14px 30px rgba(56,189,248,0.9);
-    }
-    #codeEditor{
-      flex:1;width:100%;border:none;outline:none;
-      background:#020617;color:#a5f3fc;
-      font-family:monospace;font-size:13px;
-      padding:12px;resize:none;
-    }
-    #previewFrame{
-      flex:1;width:100%;border:none;display:none;background:#fff;
-    }
+      .scroll-smooth {
+        scroll-behavior: smooth;
+      }
+    </style>
+  </head>
 
-    /* FLOATING ADD BUTTON (owner) */
-    .fab{
-      position:absolute;right:18px;bottom:18px;
-      width:50px;height:50px;border-radius:999px;
-      border:none;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      background:radial-gradient(circle at 20% 0,#22d3ee,#22c55e);
-      color:#020617;font-size:24px;
-      box-shadow:0 20px 45px rgba(34,197,94,0.95);
-      transition:transform .18s,box-shadow .18s,filter .18s;
-      z-index:10;
-    }
-    .fab:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 24px 55px rgba(34,197,94,1);filter:brightness(1.05);}
-    .fab:active{transform:translateY(1px) scale(.96);box-shadow:0 14px 30px rgba(15,23,42,1);filter:brightness(.95);}
+  <body class="scroll-smooth">
+    <div id="root"></div>
 
-    /* RESPONSIVE */
-    @media(max-width:960px){
-      .app{grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto 45vh;}
-      .code-panel{grid-column:1/-1;}
-      .sidebar{width:72px;}
-      .sidebar.collapsed{width:72px;}
-      .main-left{grid-column:2/-1;}
-    }
-    @media(max-width:640px){
-      .top-metrics{display:none;}
-    }
-  </style>
-</head>
-<body>
+    <script type="text/babel">
+      const { useState } = React;
 
-<!-- SPLASH -->
-<div id="splash">
-  <div class="splash-logo"><span>A</span></div>
-  <div class="splash-title">APCOLITE BRUSH</div>
-  <div class="splash-sub">Premium Brush Samples Manager</div>
-</div>
+      /**********************
+       *  MOCK TYPES / DATA *
+       **********************/
+      const initialApps = [
+        {
+          id: "1",
+          userId: "u1",
+          appName: "Neon Tasks",
+          shortDescription: "Hyper-fast daily productivity with glowing 3D UI.",
+          longDescription:
+            "Neon Tasks is a futuristic productivity app that gamifies your daily to-do with streaks, XP and smooth 3D transitions. Manage projects, create routines and keep everything in a glowing neon workspace.",
+          category: "Productivity",
+          fileName: "neon_tasks_1.0.apk",
+          fileSize: "18.2 MB",
+          iconUrl: "",
+          screenshots: [],
+          versionName: "1.0.0",
+          versionCode: "100",
+          status: "published",
+          createdAt: "2025-11-01T10:00:00Z",
+          rejectedReason: null,
+        },
+        {
+          id: "2",
+          userId: "u2",
+          appName: "Galaxy Finance",
+          shortDescription: "Visualize your money like galaxies in space.",
+          longDescription:
+            "Galaxy Finance turns your finances into a 3D galaxy of planets and stars. Each category, budget and goal becomes a glowing world you can zoom into.",
+          category: "Finance",
+          fileName: "galaxy_finance_2.1.apk",
+          fileSize: "24.7 MB",
+          iconUrl: "",
+          screenshots: [],
+          versionName: "2.1.3",
+          versionCode: "213",
+          status: "pending",
+          createdAt: "2025-11-05T15:30:00Z",
+          rejectedReason: null,
+        },
+        {
+          id: "3",
+          userId: "u1",
+          appName: "Pulse Notes",
+          shortDescription: "Minimal notes app with heartbeat animations.",
+          longDescription:
+            "Pulse Notes keeps your ideas alive with pulsing gradients and smooth transitions. Organize notes quickly and beautifully.",
+          category: "Tools",
+          fileName: "pulse_notes_0.9.apk",
+          fileSize: "9.5 MB",
+          iconUrl: "",
+          screenshots: [],
+          versionName: "0.9.0",
+          versionCode: "90",
+          status: "rejected",
+          createdAt: "2025-11-07T09:00:00Z",
+          rejectedReason: "Design not consistent with guidelines.",
+        },
+      ];
 
-<div class="app">
-  <div class="orb one"></div>
-  <div class="orb two"></div>
+      const categoriesList = [
+        "All",
+        "Productivity",
+        "Finance",
+        "Tools",
+        "Games",
+        "Lifestyle",
+        "Education",
+        "Entertainment",
+      ];
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-head">
-      <div class="logo-circle"><i class="ri-brush-3-line"></i></div>
-      <div class="brand-text">
-        <strong>Apcolite</strong>
-        <span>Brush Control Panel</span>
-      </div>
-      <button class="sidebar-toggle" id="sidebarToggle"><i class="ri-menu-fold-line"></i></button>
-    </div>
+      /**********************
+       *  SMALL UI HELPERS  *
+       **********************/
 
-    <div class="nav-title">Navigation</div>
-    <ul class="nav-list" id="navList">
-      <li class="nav-item active" data-view="homeView">
-        <i class="ri-home-5-line"></i><span class="label">Home</span><span class="tag">Feed</span>
-      </li>
-      <li class="nav-item" data-view="addProductView" id="navAdd">
-        <i class="ri-add-circle-line"></i><span class="label">Add Product</span><span class="tag">Owner</span>
-      </li>
-      <li class="nav-item" data-view="productDetailsView">
-        <i class="ri-gallery-line"></i><span class="label">Product Details</span><span class="tag">View</span>
-      </li>
-      <li class="nav-item" data-view="adminView" id="navAdmin">
-        <i class="ri-shield-user-line"></i><span class="label">Admin Panel</span><span class="tag">Admin</span>
-      </li>
-      <li class="nav-item" data-view="myProductsView" id="navMy">
-        <i class="ri-archive-drawer-line"></i><span class="label">My Products</span><span class="tag">Owner</span>
-      </li>
-      <li class="nav-item" data-view="profileView">
-        <i class="ri-user-3-line"></i><span class="label">Profile Page</span><span class="tag">Profile</span>
-      </li>
-      <li class="nav-item" data-view="roleView">
-        <i class="ri-flow-chart"></i><span class="label">Role System</span><span class="tag">Guide</span>
-      </li>
-    </ul>
+      const Badge = ({ status }) => {
+        const map = {
+          published: "bg-emerald-500/15 text-emerald-300 border-emerald-400/70",
+          pending: "bg-yellow-500/10 text-yellow-200 border-yellow-400/70",
+          approved: "bg-sky-500/10 text-sky-200 border-sky-400/70",
+          rejected: "bg-rose-500/10 text-rose-200 border-rose-400/70",
+        };
+        return (
+          <span
+            className={
+              "text-[10px] px-2 py-0.5 rounded-full border font-medium tracking-wide " +
+              (map[status] || "bg-slate-500/10 text-slate-200 border-slate-400/70")
+            }
+          >
+            {String(status).toUpperCase()}
+          </span>
+        );
+      };
 
-    <div class="sidebar-footer">
-      <div class="user-pill">
-        <div class="avatar" id="avatar"><span>AD</span></div>
-        <div class="user-meta">
-          <strong id="userName">Admin Demo</strong>
-          <span id="userPhone" style="font-size:9px;">+91-0000000000</span>
-          <div class="role-chip"><i class="ri-shield-star-line"></i><span id="roleLabel">Admin</span></div>
-        </div>
-      </div>
-      <!-- DEMO ROLE SWITCH (for testing) -->
-      <select class="role-select" id="roleSelect">
-        <option value="admin">Impersonate: Admin</option>
-        <option value="owner">Impersonate: Owner</option>
-        <option value="seller">Impersonate: Seller</option>
-        <option value="user">Impersonate: Us
+      const AppCard = ({ app, onClick }) => {
+        return (
+          <div
+            onClick={onClick}
+            className="relative card-3d transition-soft cursor-pointer rounded-3xl glass-panel border border-slate-700/70 hover:-translate-y-2 hover:rotate-[0.5deg] hover:border-cyan-400/80"
+          >
+            <div className="absolute -inset-px rounded-3xl opacity-40 pointer-events-none">
+              <div className="w-full h-full bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(168,85,247,0.35),transparent_55%)]" />
+            </div>
+            <div className="relative z-10 p-4 flex gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500/40 to-fuchsia-500/40 flex items-center justify-center text-xl font-bold neon-glow">
+                {app.appName[0]}
+              </div>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-sm md:text-base">
+                    {app.appName}
+                  </h3>
+                  <Badge status={app.status} />
+                </div>
+                <p className="text-xs text-slate-300 line-clamp-2">
+                  {app.shortDescription}
+                </p>
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-[11px] text-sky-300/80">
+                    {app.category}
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    v{app.versionName || app.version_name || "1.0.0"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const Toggle3D = ({ label, value, onChange, disabled }) => {
+        return (
+          <div className="flex items-center justify-between gap-4 py-1.5">
+            <span className="text-xs md:text-sm">{label}</span>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => !disabled && onChange(!value)}
+              className={
+                "relative h-8 w-16 rounded-full bg-slate-900/90 border border-slate-600/80 flex items-center toggle-3d transition-soft " +
+                (disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer")
+              }
+            >
+              <div
+                className={
+                  "absolute inset-0 rounded-full transition-soft " +
+                  (value
+                    ? "bg-gradient-to-r from-cyan-500/60 via-sky-500/40 to-fuchsia-500/60"
+                    : "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800")
+                }
+              ></div>
+              <div
+                className={
+                  "relative z-10 h-6 w-6 rounded-full bg-slate-100 shadow-lg transform transition-soft " +
+                  (value ? "translate-x-8" : "translate-x-1")
+                }
+              ></div>
+            </button>
+          </div>
+        );
+      };
+
+      /**********************
+       *      PAGES         *
+       **********************/
+
+      const HomePage = ({
+        apps,
+        onOpenDetails,
+        search,
+        setSearch,
+        onGoUpload,
+      }) => {
+        const filtered = apps.filter((a) => {
+          const q = search.toLowerCase();
+          return (
+            a.appName.toLowerCase().includes(q) ||
+            a.shortDescription.toLowerCase().includes(q) ||
+            a.category.toLowerCase().includes(q)
+          );
+        });
+
+        return (
+          <div className="px-4 md:px-8 py-5 space-y-6">
+            {/* Floating parallax background circles */}
+            <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+              <div className="absolute -top-32 -left-24 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl float-slow"></div>
+              <div className="absolute top-10 right-[-5rem] h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl float-slow-delayed"></div>
+              <div className="absolute bottom-[-6rem] left-1/2 -translate-x-1/2 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl"></div>
+            </div>
+
+            {/* 3D Search bar */}
+            <div className="max-w-3xl mx-auto">
+              <div className="relative float-slow">
+                <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-indigo-500 blur-xl opacity-70"></div>
+                <div className="relative glass-panel rounded-3xl border border-slate-700/80 px-4 py-3 md:px-6 md:py-4 flex items-center gap-3 shadow-2xl">
+                  <span className="text-xl md:text-2xl text-cyan-300">🔍</span>
+                  <input
+                    placeholder="Search neon apps..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-transparent flex-1 text-sm md:text-base outline-none placeholder:text-slate-500"
+                  />
+                  <button
+                    onClick={onGoUpload}
+                    className="text-xs md:text-sm px-3 py-1.5 rounded-full border border-cyan-400/70 text-cyan-200 hover:bg-cyan-500/15 transition-soft"
+                  >
+                    + Upload
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Rotating categories */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative h-32 w-72 md:h-40 md:w-96 flex items-center justify-center">
+                <div className="absolute h-24 w-24 md:h-32 md:w-32 rounded-full border border-slate-600/70 bg-slate-900/60"></div>
+                <div className="absolute h-40 w-40 md:h-52 md:w-52 rounded-full border border-cyan-500/40 spin-slow"></div>
+
+                {categoriesList
+                  .filter((c) => c !== "All")
+                  .map((cat, index) => {
+                    const angle = (index / (categoriesList.length - 1)) * 2 * Math.PI;
+                    const radius = 80;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setSearch(cat === "All" ? "" : cat)}
+                        className="absolute text-[10px] md:text-xs px-2.5 py-1 rounded-full bg-slate-900/90 border border-slate-600/70 hover:border-cyan-400/80 transition-soft shadow-lg"
+                        style={{
+                          transform: `translate(${x}px, ${y}px)`,
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
+              </div>
+              <p className="text-[11px] text-slate-400 uppercase tracking-[0.2em]">
+                3D ROTATING CATEGORIES
+              </p>
+            </div>
+
+            {/* App list */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg md:text-xl font-semibold">
+                  Trending & New
+                </h2>
+                <span className="text-[11px] text-slate-400">
+                  Showing {filtered.length} apps
+                </span>
+              </div>
+              {filtered.length === 0 ? (
+                <div className="glass-panel rounded-2xl border border-slate-700/80 px-4 py-6 text-sm text-slate-300 text-center">
+                  No apps match your search yet.
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((app) => (
+                    <AppCard
+                      key={app.id}
+                      app={app}
+                      onClick={() => onOpenDetails(app)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const CategoriesPage = ({ apps, onOpenDetails }) => {
+        return (
+          <div className="px-4 md:px-8 py-5 space-y-4">
+            <h2 className="text-lg md:text-xl font-semibold mb-2">Categories</h2>
+            <div className="grid md:grid-cols-4 gap-4 mb-4">
+              {categoriesList.map((cat) => (
+                <div
+                  key={cat}
+                  className="glass-panel rounded-3xl border border-slate-700/80 p-4 flex items-center justify-between hover:border-cyan-400/80 transition-soft"
+                >
+                  <span className="text-sm">{cat}</span>
+                  <span className="text-[11px] text-slate-400">
+                    {
+                      (cat === "All"
+                        ? apps
+                        : apps.filter((a) => a.category === cat)
+                      ).length
+                    }{" "}
+                    apps
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-200">
+                All Published Apps
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {apps
+                  .filter((a) => a.status === "published")
+                  .map((app) => (
+                    <AppCard
+                      key={app.id}
+                      app={app}
+                      onClick={() => onOpenDetails(app)}
+                    />
+                  ))}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const AppDetailsPage = ({ app, isOwner }) => {
+        if (!app) {
+          return (
+            <div className="p-6 text-sm text-slate-300">
+              Select an app from Home or Categories.
+            </div>
+          );
+        }
+
+        return (
+          <div className="px-4 md:px-8 py-5">
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Left: icon + meta */}
+              <div className="lg:col-span-1">
+                <div className="relative card-3d glass-panel rounded-3xl border border-slate-700/80 p-5">
+                  <div className="absolute -inset-px rounded-3xl opacity-30 pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.5),transparent_55%),radial-gradient(circle_at_bottom,_rgba(244,63,94,0.4),transparent_55%)]"></div>
+                  <div className="relative z-10 flex flex-col items-center text-center gap-3">
+                    <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-cyan-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold float-slow neon-glow">
+                      {app.appName[0]}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold">{app.appName}</h2>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {app.category}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-slate-300">
+                      <Badge status={app.status} />
+                      <span>v{app.versionName || app.version_name || "1.0.0"}</span>
+                    </div>
+                    <div className="w-full mt-3 text-xs text-slate-300 space-y-1">
+                      <div className="flex justify-between">
+                        <span>File</span>
+                        <span>{app.fileName || "app_release.apk"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Size</span>
+                        <span>{app.fileSize || "—"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Uploaded</span>
+                        <span>{new Date(app.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+
+                    {/* Download (dummy) */}
+                    <button className="mt-3 text-xs px-4 py-2 rounded-full border border-sky-400/80 text-sky-100 hover:bg-sky-500/20 transition-soft">
+                      Download (Demo)
+                    </button>
+
+                    {/* Publish button is intentionally HIDDEN for normal users.
+                        If you want to show something special for owner in future,
+                        you can use isOwner here. */}
+                    {isOwner && (
+                      <div className="mt-2 text-[11px] text-amber-300/80 italic">
+                        (Owner sees internal controls here in real backend.)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: description + screenshots */}
+              <div className="lg:col-span-2 space-y-5">
+                <div className="glass-panel rounded-3xl border border-slate-700/80 p-5">
+                  <h3 className="text-sm font-semibold mb-2">
+                    Description
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
+                    {app.longDescription}
+                  </p>
+                </div>
+
+                <div className="glass-panel rounded-3xl border border-slate-700/80 p-5">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-semibold">Screenshots</h3>
+                    <span className="text-[11px] text-slate-400">
+                      (Static demo slider)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[1, 2, 3].map((n) => (
+                      <div
+      
