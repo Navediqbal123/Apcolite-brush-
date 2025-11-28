@@ -1,509 +1,853 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Futuristic App Store UI (Frontend Only)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Tailwind via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+<head>
+  <meta charset="UTF-8" />
+  <title>Apcolite Brush</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-    <!-- React + ReactDOM + Babel (for JSX in browser) -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    body {
+      background: radial-gradient(circle at top, #1f2937, #020617);
+      color: #f9fafb;
+      min-height: 100vh;
+      overflow: hidden;
+    }
 
-    <style>
-      /* Simple neon, 3D & animation helpers */
+    .app-root {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-      body {
-        background: radial-gradient(circle at top, #0f172a, #020617 60%);
-        color: #e5e7eb;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-          sans-serif;
+    /* Splash Screen */
+    .splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      z-index: 999;
+      flex-direction: column;
+      animation: fadeOut 1.4s ease 1.6s forwards;
+    }
+
+    .splash-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, #f97316, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(249, 115, 22, 0.7);
+      animation: popIn 0.8s ease;
+    }
+
+    .splash-logo span {
+      font-size: 38px;
+      font-weight: 800;
+    }
+
+    .splash-title {
+      margin-top: 16px;
+      font-size: 26px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .splash-sub {
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* Glass Sidebar */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      border-right: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 10px 0 30px rgba(15, 23, 42, 0.9);
+      transform: translateX(0);
+      transition: transform 0.25s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top left, #f97316, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .sidebar-role {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.55;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.02), rgba(15, 23, 42, 0.7));
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-size: 13px;
+    }
+
+    .nav-item span.icon {
+      font-size: 16px;
+      width: 20px;
+    }
+
+    .nav-item.active {
+      border-color: rgba(248, 250, 252, 0.3);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+      background: radial-gradient(circle at top, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.8));
+    }
+
+    .nav-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.4);
+      background: radial-gradient(circle at top left, rgba(51, 65, 85, 0.8), rgba(15, 23, 42, 0.9));
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 11px;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .role-chip span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.88);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      width: 36px;
+      height: 36px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .mobile-menu-btn span {
+      font-size: 19px;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 18px;
+      padding-left: 10px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .page-card {
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95));
+      box-shadow: 0 0 40px rgba(15, 23, 42, 0.9);
+      padding: 18px 18px 20px;
+      min-height: calc(100vh - 56px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-badge {
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      opacity: 0.75;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 14px;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      opacity: 0.8;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.9);
+      opacity: 1;
+    }
+
+    .chip:hover {
+      border-color: rgba(148, 163, 184, 0.9);
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .input {
+      flex: 1;
+      min-width: 160px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      background: radial-gradient(circle at top left, #0ea5e9, #22c55e);
+      color: #0b1120;
+      font-weight: 600;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.7);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #e5e7eb;
+      border-color: rgba(148, 163, 184, 0.8);
+      box-shadow: none;
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(56, 189, 248, 0.9);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .product-card {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95));
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 20px 35px rgba(15, 23, 42, 0.9);
+    }
+
+    .product-image {
+      height: 140px;
+      width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-body {
+      padding: 10px 11px 11px;
+    }
+
+    .product-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .product-price {
+      color: #4ade80;
+      font-weight: 600;
+    }
+
+    .product-strike {
+      font-size: 11px;
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    .product-discount {
+      font-size: 11px;
+      color: #facc15;
+      margin-left: auto;
+    }
+
+    .floating-pill {
+      position: absolute;
+      inset: auto 16px 18px auto;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      font-size: 11px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .floating-pill span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .field label {
+      opacity: 0.8;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+      min-height: 38px;
+    }
+
+    .field textarea {
+      min-height: 70px;
+    }
+
+    .field input[type="file"] {
+      padding: 7px;
+    }
+
+    /* Product Details */
+    .details-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .image-strip {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .image-strip img {
+      width: 150px;
+      height: 150px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .details-box {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 12px 14px;
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.96));
+      font-size: 13px;
+    }
+
+    .details-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    /* Admin Panel */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .admin-card {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 1));
+      padding: 12px 13px;
+      font-size: 13px;
+    }
+
+    .admin-card h3 {
+      font-size: 14px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .table {
+      width: 100%;
+      border-spacing: 0;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .table th,
+    .table td {
+      padding: 5px 4px;
+      text-align: left;
+      border-bottom: 1px solid rgba(30, 41, 59, 1);
+    }
+
+    .table th {
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 8px 9px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+    }
+
+    .stat-label {
+      opacity: 0.65;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Profile */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      border: 2px solid rgba(56, 189, 248, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #0ea5e9, #22c55e);
+      color: #0b1120;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .avatar-sub {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    /* Wallet */
+    .wallet-card {
+      border-radius: 18px;
+      border: 1px solid rgba(248, 250, 252, 0.18);
+      background: radial-gradient(circle at top, rgba(6, 78, 59, 0.95), rgba(15, 23, 42, 1));
+      padding: 12px 13px;
+      margin-top: 10px;
+    }
+
+    /* My Products */
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      opacity: 0.8;
+    }
+
+    /* Floating Add Button (for owner) */
+    .floating-add-btn {
+      position: absolute;
+      right: 22px;
+      bottom: 22px;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #22c55e, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #020617;
+      font-size: 26px;
+      border: 1px solid rgba(248, 250, 252, 0.65);
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.9);
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .floating-add-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.9);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
       }
 
-      .bg-neon-grid {
-        background-image: radial-gradient(circle at 1px 1px, #1e293b 1px, #020617 0);
-        background-size: 24px 24px;
+      .sidebar.open {
+        transform: translateX(0);
       }
 
-      .float-slow {
-        animation: float-slow 6s ease-in-out infinite;
+      .mobile-menu-btn {
+        display: inline-flex;
       }
 
-      .float-slow-delayed {
-        animation: float-slow 8s ease-in-out infinite;
+      .details-layout {
+        grid-template-columns: minmax(0, 1fr);
       }
 
-      .spin-slow {
-        animation: spin-slow 18s linear infinite;
+      .page-card {
+        min-height: calc(100vh - 36px);
       }
 
-      @keyframes float-slow {
-        0% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-12px);
-        }
-        100% {
-          transform: translateY(0px);
-        }
+      .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+    }
 
-      @keyframes spin-slow {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+    @media (max-width: 520px) {
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div class="splash" id="splash">
+    <div class="splash-logo">
+      <span>A</span>
+    </div>
+    <div class="splash-title">APCOLITE BRUSH</div>
+    <div class="splash-sub">Professional Brush Store · Dark · Animated</div>
+  </div>
 
-      .glass-panel {
-        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 50%),
-          radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.25), transparent 55%),
-          rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(18px);
+  <!-- Mobile Menu Button -->
+  <div class="mobile-menu-btn" id="mobileMenuBtn">
+    <span>☰</span>
+  </div>
+
+  <div class="app-root">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">AB</div>
+        <div>
+          <div class="sidebar-title">Apcolite Brush</div>
+          <div class="sidebar-role" id="sidebarRoleText">Role: -</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Main</div>
+        <div class="nav-list" id="navMain"></div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Account</div>
+        <div class="nav-list" id="navAccount"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div>Quick Role Demo:</div>
+        <div class="role-chip" id="roleSwitcher">
+          <span class="dot"></span>
+          <span id="roleSwitcherText">Switch to Owner</span>
+        </div>
+        <div style="font-size: 11px; opacity: 0.55;">
+          (Only for preview: cycles between <b>Admin</b>, <b>Owner</b>, <b>Seller</b>)
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <section class="page-card" id="pageContainer">
+        <!-- JS fills here -->
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /*****************************************************
+     * MOCK "TABLES"
+     *****************************************************/
+    const profiles = [
+      { id: 1, name: "Admin Pro", phone: "9999999991", role: "admin", photo: "", strikes: 0, balance: 0 },
+      { id: 2, name: "Owner Studio", phone: "9999999992", role: "owner", photo: "", strikes: 0, balance: 0 },
+      { id: 3, name: "Seller Prime", phone: "9999999993", role: "seller", photo: "", strikes: 2, balance: 120 },
+    ];
+
+    const roles = ["admin", "owner", "seller"];
+
+    const products = [
+      {
+        id: 1,
+        title: "Apcolite Premium Wall Brush",
+        description: "Smooth finish, zero streaks & perfect edges.",
+        price: 120,
+        strikePrice: 199,
+        gst: 18,
+        location: "Mumbai",
+        phone: "9999999992",
+        brand: "Apcolite",
+        experience: "5+ years",
+        ownerId: 2,
+        images: [
+          "https://images.pexels.com/photos/1500459/pexels-photo-1500459.jpeg?auto=compress&cs=tinysrgb&w=600",
+          "https://images.pexels.com/photos/9462128/pexels-photo-9462128.jpeg?auto=compress&cs=tinysrgb&w=600"
+        ],
+        category: "Interior",
+        status: "approved",
+      },
+      {
+        id: 2,
+        title: "UltraSoft Detail Brush",
+        description: "Perfect for corners, frames and delicate work.",
+        price: 150,
+        strikePrice: 249,
+        gst: 18,
+        location: "Delhi",
+        phone: "9999999992",
+        brand: "Apcolite",
+        experience: "3+ years",
+        ownerId: 2,
+        images: [
+          "https://images.pexels.com/photos/9462129/pexels-photo-9462129.jpeg?auto=compress&cs=tinysrgb&w=600"
+        ],
+        category: "Detailing",
+        status: "pending",
+      },
+      {
+        id: 3,
+        title: "Exterior Power Brush",
+        description: "High durability for heavy outdoor usage.",
+        price: 180,
+        strikePrice: 280,
+        gst: 18,
+        location: "Pune",
+        phone: "9999999992",
+        brand: "Apcolite",
+        experience: "7+ years",
+        ownerId: 2,
+        images: [
+          "https://images.pexels.com/photos/3735415/pexels-photo-3735415.jpeg?auto=compress&cs=tinysrgb&w=600"
+        ],
+        category: "Exterior",
+        status: "approved",
       }
+    ];
 
-      .transition-soft {
-        transition: all 0.25s ease-out;
-      }
+    const strikesTable = [
+      { userId: 3, strikes: 2, balanceCut: 120 },
+    ];
 
-      .toggle-3d {
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.8);
-      }
+    let currentUser = { ...profiles[0] }; // start as admin
+    let currentPage = "home";
+    let selectedProductId = products[0].id;
+    let currentCategoryFilter = "All";
+    let searchTerm = "";
 
-      .card-3d {
-        box-shadow:
-          0 28px 65px rgba(0, 0, 0, 0.9),
-          0 0 40px rgba(56, 189, 248, 0.35);
-      }
-
-      .neon-border {
-        border-image: linear-gradient(135deg, #22d3ee, #a855f7, #f97316) 1;
-      }
-
-      .neon-glow {
-        box-shadow:
-          0 0 20px rgba(56, 189, 248, 0.5),
-          0 0 40px rgba(168, 85, 247, 0.4);
-      }
-
-      .scroll-smooth {
-        scroll-behavior: smooth;
-      }
-    </style>
-  </head>
-
-  <body class="scroll-smooth">
-    <div id="root"></div>
-
-    <script type="text/babel">
-      const { useState } = React;
-
-      /**********************
-       *  MOCK TYPES / DATA *
-       **********************/
-      const initialApps = [
-        {
-          id: "1",
-          userId: "u1",
-          appName: "Neon Tasks",
-          shortDescription: "Hyper-fast daily productivity with glowing 3D UI.",
-          longDescription:
-            "Neon Tasks is a futuristic productivity app that gamifies your daily to-do with streaks, XP and smooth 3D transitions. Manage projects, create routines and keep everything in a glowing neon workspace.",
-          category: "Productivity",
-          fileName: "neon_tasks_1.0.apk",
-          fileSize: "18.2 MB",
-          iconUrl: "",
-          screenshots: [],
-          versionName: "1.0.0",
-          versionCode: "100",
-          status: "published",
-          createdAt: "2025-11-01T10:00:00Z",
-          rejectedReason: null,
-        },
-        {
-          id: "2",
-          userId: "u2",
-          appName: "Galaxy Finance",
-          shortDescription: "Visualize your money like galaxies in space.",
-          longDescription:
-            "Galaxy Finance turns your finances into a 3D galaxy of planets and stars. Each category, budget and goal becomes a glowing world you can zoom into.",
-          category: "Finance",
-          fileName: "galaxy_finance_2.1.apk",
-          fileSize: "24.7 MB",
-          iconUrl: "",
-          screenshots: [],
-          versionName: "2.1.3",
-          versionCode: "213",
-          status: "pending",
-          createdAt: "2025-11-05T15:30:00Z",
-          rejectedReason: null,
-        },
-        {
-          id: "3",
-          userId: "u1",
-          appName: "Pulse Notes",
-          shortDescription: "Minimal notes app with heartbeat animations.",
-          longDescription:
-            "Pulse Notes keeps your ideas alive with pulsing gradients and smooth transitions. Organize notes quickly and beautifully.",
-          category: "Tools",
-          fileName: "pulse_notes_0.9.apk",
-          fileSize: "9.5 MB",
-          iconUrl: "",
-          screenshots: [],
-          versionName: "0.9.0",
-          versionCode: "90",
-          status: "rejected",
-          createdAt: "2025-11-07T09:00:00Z",
-          rejectedReason: "Design not consistent with guidelines.",
-        },
-      ];
-
-      const categoriesList = [
-        "All",
-        "Productivity",
-        "Finance",
-        "Tools",
-        "Games",
-        "Lifestyle",
-        "Education",
-        "Entertainment",
-      ];
-
-      /**********************
-       *  SMALL UI HELPERS  *
-       **********************/
-
-      const Badge = ({ status }) => {
-        const map = {
-          published: "bg-emerald-500/15 text-emerald-300 border-emerald-400/70",
-          pending: "bg-yellow-500/10 text-yellow-200 border-yellow-400/70",
-          approved: "bg-sky-500/10 text-sky-200 border-sky-400/70",
-          rejected: "bg-rose-500/10 text-rose-200 border-rose-400/70",
-        };
-        return (
-          <span
-            className={
-              "text-[10px] px-2 py-0.5 rounded-full border font-medium tracking-wide " +
-              (map[status] || "bg-slate-500/10 text-slate-200 border-slate-400/70")
-            }
-          >
-            {String(status).toUpperCase()}
-          </span>
-        );
-      };
-
-      const AppCard = ({ app, onClick }) => {
-        return (
-          <div
-            onClick={onClick}
-            className="relative card-3d transition-soft cursor-pointer rounded-3xl glass-panel border border-slate-700/70 hover:-translate-y-2 hover:rotate-[0.5deg] hover:border-cyan-400/80"
-          >
-            <div className="absolute -inset-px rounded-3xl opacity-40 pointer-events-none">
-              <div className="w-full h-full bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(168,85,247,0.35),transparent_55%)]" />
-            </div>
-            <div className="relative z-10 p-4 flex gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500/40 to-fuchsia-500/40 flex items-center justify-center text-xl font-bold neon-glow">
-                {app.appName[0]}
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-sm md:text-base">
-                    {app.appName}
-                  </h3>
-                  <Badge status={app.status} />
-                </div>
-                <p className="text-xs text-slate-300 line-clamp-2">
-                  {app.shortDescription}
-                </p>
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-[11px] text-sky-300/80">
-                    {app.category}
-                  </span>
-                  <span className="text-[11px] text-slate-400">
-                    v{app.versionName || app.version_name || "1.0.0"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      };
-
-      const Toggle3D = ({ label, value, onChange, disabled }) => {
-        return (
-          <div className="flex items-center justify-between gap-4 py-1.5">
-            <span className="text-xs md:text-sm">{label}</span>
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => !disabled && onChange(!value)}
-              className={
-                "relative h-8 w-16 rounded-full bg-slate-900/90 border border-slate-600/80 flex items-center toggle-3d transition-soft " +
-                (disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer")
-              }
-            >
-              <div
-                className={
-                  "absolute inset-0 rounded-full transition-soft " +
-                  (value
-                    ? "bg-gradient-to-r from-cyan-500/60 via-sky-500/40 to-fuchsia-500/60"
-                    : "bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800")
-                }
-              ></div>
-              <div
-                className={
-                  "relative z-10 h-6 w-6 rounded-full bg-slate-100 shadow-lg transform transition-soft " +
-                  (value ? "translate-x-8" : "translate-x-1")
-                }
-              ></div>
-            </button>
-          </div>
-        );
-      };
-
-      /**********************
-       *      PAGES         *
-       **********************/
-
-      const HomePage = ({
-        apps,
-        onOpenDetails,
-        search,
-        setSearch,
-        onGoUpload,
-      }) => {
-        const filtered = apps.filter((a) => {
-          const q = search.toLowerCase();
-          return (
-            a.appName.toLowerCase().includes(q) ||
-            a.shortDescription.toLowerCase().includes(q) ||
-            a.category.toLowerCase().includes(q)
-          );
-        });
-
-        return (
-          <div className="px-4 md:px-8 py-5 space-y-6">
-            {/* Floating parallax background circles */}
-            <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-              <div className="absolute -top-32 -left-24 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl float-slow"></div>
-              <div className="absolute top-10 right-[-5rem] h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl float-slow-delayed"></div>
-              <div className="absolute bottom-[-6rem] left-1/2 -translate-x-1/2 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl"></div>
-            </div>
-
-            {/* 3D Search bar */}
-            <div className="max-w-3xl mx-auto">
-              <div className="relative float-slow">
-                <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-indigo-500 blur-xl opacity-70"></div>
-                <div className="relative glass-panel rounded-3xl border border-slate-700/80 px-4 py-3 md:px-6 md:py-4 flex items-center gap-3 shadow-2xl">
-                  <span className="text-xl md:text-2xl text-cyan-300">🔍</span>
-                  <input
-                    placeholder="Search neon apps..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="bg-transparent flex-1 text-sm md:text-base outline-none placeholder:text-slate-500"
-                  />
-                  <button
-                    onClick={onGoUpload}
-                    className="text-xs md:text-sm px-3 py-1.5 rounded-full border border-cyan-400/70 text-cyan-200 hover:bg-cyan-500/15 transition-soft"
-                  >
-                    + Upload
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Rotating categories */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative h-32 w-72 md:h-40 md:w-96 flex items-center justify-center">
-                <div className="absolute h-24 w-24 md:h-32 md:w-32 rounded-full border border-slate-600/70 bg-slate-900/60"></div>
-                <div className="absolute h-40 w-40 md:h-52 md:w-52 rounded-full border border-cyan-500/40 spin-slow"></div>
-
-                {categoriesList
-                  .filter((c) => c !== "All")
-                  .map((cat, index) => {
-                    const angle = (index / (categoriesList.length - 1)) * 2 * Math.PI;
-                    const radius = 80;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => setSearch(cat === "All" ? "" : cat)}
-                        className="absolute text-[10px] md:text-xs px-2.5 py-1 rounded-full bg-slate-900/90 border border-slate-600/70 hover:border-cyan-400/80 transition-soft shadow-lg"
-                        style={{
-                          transform: `translate(${x}px, ${y}px)`,
-                        }}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-              </div>
-              <p className="text-[11px] text-slate-400 uppercase tracking-[0.2em]">
-                3D ROTATING CATEGORIES
-              </p>
-            </div>
-
-            {/* App list */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg md:text-xl font-semibold">
-                  Trending & New
-                </h2>
-                <span className="text-[11px] text-slate-400">
-                  Showing {filtered.length} apps
-                </span>
-              </div>
-              {filtered.length === 0 ? (
-                <div className="glass-panel rounded-2xl border border-slate-700/80 px-4 py-6 text-sm text-slate-300 text-center">
-                  No apps match your search yet.
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filtered.map((app) => (
-                    <AppCard
-                      key={app.id}
-                      app={app}
-                      onClick={() => onOpenDetails(app)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      };
-
-      const CategoriesPage = ({ apps, onOpenDetails }) => {
-        return (
-          <div className="px-4 md:px-8 py-5 space-y-4">
-            <h2 className="text-lg md:text-xl font-semibold mb-2">Categories</h2>
-            <div className="grid md:grid-cols-4 gap-4 mb-4">
-              {categoriesList.map((cat) => (
-                <div
-                  key={cat}
-                  className="glass-panel rounded-3xl border border-slate-700/80 p-4 flex items-center justify-between hover:border-cyan-400/80 transition-soft"
-                >
-                  <span className="text-sm">{cat}</span>
-                  <span className="text-[11px] text-slate-400">
-                    {
-                      (cat === "All"
-                        ? apps
-                        : apps.filter((a) => a.category === cat)
-                      ).length
-                    }{" "}
-                    apps
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-200">
-                All Published Apps
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {apps
-                  .filter((a) => a.status === "published")
-                  .map((app) => (
-                    <AppCard
-                      key={app.id}
-                      app={app}
-                      onClick={() => onOpenDetails(app)}
-                    />
-                  ))}
-              </div>
-            </div>
-          </div>
-        );
-      };
-
-      const AppDetailsPage = ({ app, isOwner }) => {
-        if (!app) {
-          return (
-            <div className="p-6 text-sm text-slate-300">
-              Select an app from Home or Categories.
-            </div>
-          );
-        }
-
-        return (
-          <div className="px-4 md:px-8 py-5">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Left: icon + meta */}
-              <div className="lg:col-span-1">
-                <div className="relative card-3d glass-panel rounded-3xl border border-slate-700/80 p-5">
-                  <div className="absolute -inset-px rounded-3xl opacity-30 pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.5),transparent_55%),radial-gradient(circle_at_bottom,_rgba(244,63,94,0.4),transparent_55%)]"></div>
-                  <div className="relative z-10 flex flex-col items-center text-center gap-3">
-                    <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-cyan-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold float-slow neon-glow">
-                      {app.appName[0]}
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold">{app.appName}</h2>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {app.category}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 text-[11px] text-slate-300">
-                      <Badge status={app.status} />
-                      <span>v{app.versionName || app.version_name || "1.0.0"}</span>
-                    </div>
-                    <div className="w-full mt-3 text-xs text-slate-300 space-y-1">
-                      <div className="flex justify-between">
-                        <span>File</span>
-                        <span>{app.fileName || "app_release.apk"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Size</span>
-                        <span>{app.fileSize || "—"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Uploaded</span>
-                        <span>{new Date(app.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Download (dummy) */}
-                    <button className="mt-3 text-xs px-4 py-2 rounded-full border border-sky-400/80 text-sky-100 hover:bg-sky-500/20 transition-soft">
-                      Download (Demo)
-                    </button>
-
-                    {/* Publish button is intentionally HIDDEN for normal users.
-                        If you want to show something special for owner in future,
-                        you can use isOwner here. */}
-                    {isOwner && (
-                      <div className="mt-2 text-[11px] text-amber-300/80 italic">
-                        (Owner sees internal controls here in real backend.)
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: description + screenshots */}
-              <div className="lg:col-span-2 space-y-5">
-                <div className="glass-panel rounded-3xl border border-slate-700/80 p-5">
-                  <h3 className="text-sm font-semibold mb-2">
-                    Description
-                  </h3>
-                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
-                    {app.longDescription}
-                  </p>
-                </div>
-
-                <div className="glass-panel rounded-3xl border border-slate-700/80 p-5">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-semibold">Screenshots</h3>
-                    <span className="text-[11px] text-slate-400">
-                      (Static demo slider)
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[1, 2, 3].map((n) => (
-                      <div
-      
+    /*****************************************************
+     * UTILITIES
+     *****************************************************/
+    function $(id) {
+      return document.getElementById(id);
+    
